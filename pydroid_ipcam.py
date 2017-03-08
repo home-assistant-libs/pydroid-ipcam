@@ -23,6 +23,7 @@ class PyDroidIPWeb(object):
         self.websession = websession
         self.status_data = None
         self.sensor_data = None
+        self.current_settings = {}
         self._host = host
         self._port = port
         self._auth = None
@@ -91,16 +92,8 @@ class PyDroidIPWeb(object):
         self.status_data = yield from self._request('/status.json')
         self.sensor_data = yield from self._request('/sensors.json')
 
-    @property
-    def enabled_sensors(self):
-        """Return the enabled sensors."""
-        return list(self.sensor_data.keys())
-
-    @property
-    def current_settings(self):
-        """Return a dictionary of the current settings."""
-        settings = {}
-        if self.status_data is not None:
+        if self.status_data:
+            self.current_settings.clear()
             for (key, val) in self.status_data.get('curvals', {}).items():
                 try:
                     val = float(val)
@@ -110,8 +103,14 @@ class PyDroidIPWeb(object):
                 if val == 'on' or val == 'off':
                     val = (val == 'on')
 
-                settings[key] = val
-            return settings
+                self.current_settings[key] = val
+
+    @property
+    def enabled_sensors(self):
+        """Return the enabled sensors."""
+        if self.sensor_data is None:
+            return []
+        return list(self.sensor_data.keys())
 
     def change_setting(self, key, val):
         """Change a setting.

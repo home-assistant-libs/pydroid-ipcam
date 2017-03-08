@@ -1,0 +1,14 @@
+[MASTER]
+reports=no
+
+disable=
+  locally-disabled,
+  duplicate-code,
+  cyclic-import,
+  abstract-class-little-used,
+  abstract-class-not-used,
+  unused-argument,
+  global-statement,
+  arguments-differ,
+  too-many-arguments,
+  too-many-locals

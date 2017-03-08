@@ -1,7 +1,6 @@
-"""PyDroidIpCam api for android ipcam."""
+"""PyDroidIPCam api for android ipcam."""
 import asyncio
 import logging
-import xml.etree.ElementTree as ET
 
 import aiohttp
 import async_timeout
@@ -9,15 +8,12 @@ import yarl
 
 _LOGGER = logging.getLogger(__name__)
 
-CONTENT_XML = 'xml'
-CONTENT_JSON = 'json'
-
 ALLOWED_ORIENTATIONS = [
     'landscape', 'upsidedown', 'portrait', 'upsidedown_portrait'
 ]
 
 
-class IPWebcam(object):
+class PyDroidIPWeb(object):
     """The Android device running IP Webcam."""
 
     def __init__(self, loop, websession, host, port, username=None,
@@ -51,7 +47,7 @@ class IPWebcam(object):
         return "{}/photo.jpg".format(self.base_url)
 
     @asyncio.coroutine
-    def _request(self, path, content=CONTENT_XML):
+    def _request(self, path):
         """Make the actual request and return the parsed response."""
         url = '{}{}'.format(self.base_url, path)
 
@@ -62,37 +58,31 @@ class IPWebcam(object):
                 response = yield from self.websession.get(url, auth=auth)
 
                 if response.status == 200:
-                    if content == CONTENT_XML:
-                        data = yield from response.text()
-                    elif content == CONTENT_JSON:
+                    if response.headers['content-type'] == 'application/json':
                         data = yield from response.json()
+                    elif content == CONTENT_JSON:
+                        data = yield from response.text()
 
         except (asyncio.TimeoutError, aiohttp.errors.ClientError,
                 aiohttp.errors.ClientDisconnectedError) as error:
             _LOGGER.error('Failed to communicate with IP Webcam: %s', error)
-            return
+            return False
 
         finally:
             if response is not None:
                 yield from response.release()
 
-        try:
-            if CONTENT_XML == 'xml':
-                return ET.fromstring(data)
-            else:
-                return data
-        except (ET.ParseError, TypeError, AttributeError):
-            _LOGGER.error("Received invalid response: %s", data)
-            return
+        if isinstance(data, str):
+            return data.find("Ok") != -1
+        else:
+            return data
 
     @asyncio.coroutine
     def update(self):
         """Fetch the latest data from IP Webcam."""
-        self.status_data = yield from self._request(
-            '/status.json', content=CONTENT_JSON)
+        self.status_data = yield from self._request('/status.json')
 
-        self.sensor_data = yield from self._request(
-            '/sensors.json', content=CONTENT_JSON)
+        self.sensor_data = yield from self._request('/sensors.json')
 
     @property
     def enabled_sensors(self):
@@ -150,8 +140,9 @@ class IPWebcam(object):
         """
         path = '/startvideo?force=1' if record else '/stopvideo?force=1'
         if record and tag is not None:
-            path = '/startvideo?force=1&tag={}'.format(quote(tag))
-        return self._request(path, content=CONTENT_JSON)
+            path = '/startvideo?force=1&tag={}'.format(yarl.quote(tag))
+
+        return self._request(path)
 
     def set_front_facing_camera(self, activate=True):
         """Enable/disable the front-facing camera.
@@ -188,7 +179,7 @@ class IPWebcam(object):
         """
         return self.change_setting('quality', quality)
 
-    def set_orientation(self, orientation: str='landscape'):
+    def set_orientation(self, orientation='landscape'):
         """Set the video orientation.
 
         Return a coroutine.
@@ -198,7 +189,7 @@ class IPWebcam(object):
             return False
         return self.change_setting('orientation', orientation)
 
-    def set_zoom(self, zoom: int):
+    def set_zoom(self, zoom):
         """Set the zoom level.
 
         Return a coroutine.

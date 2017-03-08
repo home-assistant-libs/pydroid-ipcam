@@ -55,12 +55,12 @@ class PyDroidIPWeb(object):
         data = None
         try:
             with async_timeout.timeout(self._timeout, loop=self.loop):
-                response = yield from self.websession.get(url, auth=auth)
+                response = yield from self.websession.get(url, auth=self._auth)
 
                 if response.status == 200:
                     if response.headers['content-type'] == 'application/json':
                         data = yield from response.json()
-                    elif content == CONTENT_JSON:
+                    else:
                         data = yield from response.text()
 
         except (asyncio.TimeoutError, aiohttp.errors.ClientError,

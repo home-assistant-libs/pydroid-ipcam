@@ -11,4 +11,5 @@ disable=
   global-statement,
   arguments-differ,
   too-many-arguments,
-  too-many-locals
+  too-many-locals,
+  too-many-instance-attributes

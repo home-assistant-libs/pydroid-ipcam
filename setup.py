@@ -30,7 +30,7 @@ setup(
     keywords=['android', 'ipcam', 'api', 'asyncio'],
     zip_safe=False,
     platforms='any',
-    py_modules=['pydroid-ipcam'],
+    py_modules=['pydroid_ipcam'],
     install_requires=[
         'async_timeout',
         'aiohttp',

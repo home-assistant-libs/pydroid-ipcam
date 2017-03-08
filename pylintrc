@@ -2,7 +2,6 @@
 reports=no
 
 disable=
-  invalid-name,
   locally-disabled,
   duplicate-code,
   cyclic-import,

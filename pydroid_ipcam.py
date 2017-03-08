@@ -13,7 +13,7 @@ ALLOWED_ORIENTATIONS = [
 ]
 
 
-class PyDroidIPWeb(object):
+class PyDroidIPCam(object):
     """The Android device running IP Webcam."""
 
     def __init__(self, loop, websession, host, port, username=None,

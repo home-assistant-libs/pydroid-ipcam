@@ -27,6 +27,7 @@ class PyDroidIPWeb(object):
         self._port = port
         self._auth = None
         self._timeout = None
+        self._available = True
 
         if username and password:
             self._auth = aiohttp.BasicAuth(username, password=password)
@@ -45,6 +46,11 @@ class PyDroidIPWeb(object):
     def image_url(self):
         """Return snapshot image url."""
         return "{}/photo.jpg".format(self.base_url)
+
+    @property
+    def available(self):
+        """Return True if is available."""
+        return self._available
 
     @asyncio.coroutine
     def _request(self, path):
@@ -66,12 +72,14 @@ class PyDroidIPWeb(object):
         except (asyncio.TimeoutError, aiohttp.errors.ClientError,
                 aiohttp.errors.ClientDisconnectedError) as error:
             _LOGGER.error('Failed to communicate with IP Webcam: %s', error)
-            return False
+            self._available = False
+            return
 
         finally:
             if response is not None:
                 yield from response.release()
 
+        self._available = True
         if isinstance(data, str):
             return data.find("Ok") != -1
         else:
@@ -81,7 +89,6 @@ class PyDroidIPWeb(object):
     def update(self):
         """Fetch the latest data from IP Webcam."""
         self.status_data = yield from self._request('/status.json')
-
         self.sensor_data = yield from self._request('/sensors.json')
 
     @property

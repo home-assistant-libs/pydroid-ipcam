@@ -23,7 +23,6 @@ class PyDroidIPCam(object):
         self.websession = websession
         self.status_data = None
         self.sensor_data = None
-        self.current_settings = {}
         self._host = host
         self._port = port
         self._auth = None
@@ -92,18 +91,25 @@ class PyDroidIPCam(object):
         self.status_data = yield from self._request('/status.json')
         self.sensor_data = yield from self._request('/sensors.json')
 
-        if self.status_data:
-            self.current_settings.clear()
-            for (key, val) in self.status_data.get('curvals', {}).items():
-                try:
-                    val = float(val)
-                except ValueError:
-                    val = val
+    @property
+    def current_settings(self):
+        """Return dict with all config include."""
+        settings = {}
+        if not self.status_data:
+            return settings
 
-                if val == 'on' or val == 'off':
-                    val = (val == 'on')
+        for (key, val) in self.status_data.get('curvals', {}).items():
+            try:
+                val = float(val)
+            except ValueError:
+                val = val
 
-                self.current_settings[key] = val
+            if val == 'on' or val == 'off':
+                val = (val == 'on')
+
+            settings[key] = val
+
+        return settings
 
     @property
     def enabled_sensors(self):
@@ -111,6 +117,28 @@ class PyDroidIPCam(object):
         if self.sensor_data is None:
             return []
         return list(self.sensor_data.keys())
+
+    @property
+    def enabled_settings(self):
+        """Return the enabled settings."""
+        if self.status_data is None:
+            return []
+        return list(self.status_data.get('curvals', {}).keys())
+
+    def export_sensor(self, sensor):
+        """Return (value, unit) from a sensor node."""
+        value = None
+        unit = None
+        try:
+            container = self.sensor_data.get(sensor)
+            unit = container.get('unit')
+            data_point = container.get('data', [[0, [0.0]]])
+            if data_point and data_point[0]:
+                value = data_point[0][-1][0]
+        except (ValueError, KeyError):
+            pass
+
+        return (value, unit)
 
     def change_setting(self, key, val):
         """Change a setting.

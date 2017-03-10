@@ -135,7 +135,7 @@ class PyDroidIPCam(object):
             data_point = container.get('data', [[0, [0.0]]])
             if data_point and data_point[0]:
                 value = data_point[0][-1][0]
-        except (ValueError, KeyError):
+        except (ValueError, KeyError, AttributeError):
             pass
 
         return (value, unit)

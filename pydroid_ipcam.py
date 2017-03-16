@@ -45,7 +45,7 @@ class PyDroidIPCam(object):
     @property
     def image_url(self):
         """Return snapshot image url."""
-        return "{}/photo.jpg".format(self.base_url)
+        return "{}/shot.jpg".format(self.base_url)
 
     @property
     def available(self):

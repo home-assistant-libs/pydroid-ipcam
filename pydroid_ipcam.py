@@ -88,8 +88,14 @@ class PyDroidIPCam(object):
     @asyncio.coroutine
     def update(self):
         """Fetch the latest data from IP Webcam."""
-        self.status_data = yield from self._request('/status.json')
-        self.sensor_data = yield from self._request('/sensors.json')
+        status_data = yield from self._request('/status.json')
+
+        if status_data:
+            self.status_data = status_data
+
+            sensor_data = yield from self._request('/sensors.json')
+            if sensor_data:
+                self.sensor_data = sensor_data
 
     @property
     def current_settings(self):

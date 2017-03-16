@@ -12,4 +12,5 @@ disable=
   arguments-differ,
   too-many-arguments,
   too-many-locals,
-  too-many-instance-attributes
+  too-many-instance-attributes,
+  too-many-public-methods

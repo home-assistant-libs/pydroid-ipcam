@@ -88,7 +88,7 @@ class PyDroidIPCam(object):
     @asyncio.coroutine
     def update(self):
         """Fetch the latest data from IP Webcam."""
-        status_data = yield from self._request('/status.json')
+        status_data = yield from self._request('/status.json?show_avail=1')
 
         if status_data:
             self.status_data = status_data
@@ -130,6 +130,28 @@ class PyDroidIPCam(object):
         if self.status_data is None:
             return []
         return list(self.status_data.get('curvals', {}).keys())
+
+    @property
+    def available_settings(self):
+        """Return dict of lists with all available config settings."""
+        available = {}
+        if not self.status_data:
+            return available
+
+        for (key, val) in self.status_data.get('avail', {}).items():
+            available[key] = []
+            for subval in val:
+                try:
+                    subval = float(subval)
+                except ValueError:
+                    subval = subval
+
+                if subval == 'on' or subval == 'off':
+                    subval = (subval == 'on')
+
+                available[key].append(subval)
+
+        return available
 
     def export_sensor(self, sensor):
         """Return (value, unit) from a sensor node."""
@@ -235,3 +257,13 @@ class PyDroidIPCam(object):
         Return a coroutine.
         """
         return self._request('/settings/ptz?zoom={}'.format(zoom))
+
+    def set_scenemode(self, scenemode='auto'):
+        """Set the video scene mode.
+
+        Return a coroutine.
+        """
+        if scenemode not in self.available_settings['scenemode']:
+            _LOGGER.debug('%s is not a valid scenemode', scenemode)
+            return False
+        return self.change_setting('scenemode', scenemode)

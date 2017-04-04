@@ -56,9 +56,8 @@ class PyDroidIPCam(object):
     def _request(self, path):
         """Make the actual request and return the parsed response."""
         url = '{}{}'.format(self.base_url, path)
-
-        response = None
         data = None
+
         try:
             with async_timeout.timeout(self._timeout, loop=self.loop):
                 response = yield from self.websession.get(url, auth=self._auth)
@@ -69,15 +68,10 @@ class PyDroidIPCam(object):
                     else:
                         data = yield from response.text()
 
-        except (asyncio.TimeoutError, aiohttp.errors.ClientError,
-                aiohttp.errors.ClientDisconnectedError) as error:
+        except (asyncio.TimeoutError, aiohttp.ClientError) as error:
             _LOGGER.error('Failed to communicate with IP Webcam: %s', error)
             self._available = False
             return
-
-        finally:
-            if response is not None:
-                yield from response.release()
 
         self._available = True
         if isinstance(data, str):

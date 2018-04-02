@@ -244,7 +244,14 @@ class PyDroidIPCam(object):
             _LOGGER.debug('%s is not a valid orientation', orientation)
             return False
         return self.change_setting('orientation', orientation)
+    
+    def set_motion_detect(self, activate=True):
+        """Enable/disable motion detection.
 
+        Return a coroutine.
+        """
+        return self.change_setting('motion_detect', activate)    
+    
     def set_zoom(self, zoom):
         """Set the zoom level.
 

@@ -3,7 +3,7 @@ import asyncio
 import logging
 
 import aiohttp
-import yarl
+from yarl import URL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -190,7 +190,7 @@ class PyDroidIPCam:
         """
         path = '/startvideo?force=1' if record else '/stopvideo?force=1'
         if record and tag is not None:
-            path = '/startvideo?force=1&tag={}'.format(yarl.quote(tag))
+            path = '/startvideo?force=1&tag={}'.format(URL(tag).raw_path)
 
         return self._request(path)
 

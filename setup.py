@@ -3,7 +3,7 @@ from setuptools import setup
 with open('README.rst') as f:
     long_description = f.read()
 
-VERSION = "0.8"
+VERSION = "0.9"
 
 setup(
     name='pydroid-ipcam',
@@ -23,16 +23,15 @@ setup(
         'Operating System :: OS Independent',
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     keywords=['android', 'ipcam', 'api', 'asyncio'],
     zip_safe=False,
     platforms='any',
     py_modules=['pydroid_ipcam'],
     install_requires=[
-        'async_timeout',
         'aiohttp',
         'yarl',
     ],

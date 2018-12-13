@@ -3,7 +3,6 @@ import asyncio
 import logging
 
 import aiohttp
-import async_timeout
 import yarl
 
 _LOGGER = logging.getLogger(__name__)
@@ -52,21 +51,18 @@ class PyDroidIPCam(object):
         """Return True if is available."""
         return self._available
 
-    @asyncio.coroutine
-    def _request(self, path):
+    async def _request(self, path):
         """Make the actual request and return the parsed response."""
         url = '{}{}'.format(self.base_url, path)
         data = None
 
         try:
-            with async_timeout.timeout(self._timeout, loop=self.loop):
-                response = yield from self.websession.get(url, auth=self._auth)
-
-                if response.status == 200:
-                    if response.headers['content-type'] == 'application/json':
-                        data = yield from response.json()
-                    else:
-                        data = yield from response.text()
+            response = await self.websession.get(url, auth=self._auth, timeout=self._timeout)
+            if response.status == 200:
+                if response.headers['content-type'] == 'application/json':
+                    data = await response.json()
+                else:
+                    data = await response.text()
 
         except (asyncio.TimeoutError, aiohttp.ClientError) as error:
             _LOGGER.error('Failed to communicate with IP Webcam: %s', error)
@@ -79,15 +75,14 @@ class PyDroidIPCam(object):
         else:
             return data
 
-    @asyncio.coroutine
-    def update(self):
+    async def update(self):
         """Fetch the latest data from IP Webcam."""
-        status_data = yield from self._request('/status.json?show_avail=1')
+        status_data = await self._request('/status.json?show_avail=1')
 
         if status_data:
             self.status_data = status_data
 
-            sensor_data = yield from self._request('/sensors.json')
+            sensor_data = await self._request('/sensors.json')
             if sensor_data:
                 self.sensor_data = sensor_data
 

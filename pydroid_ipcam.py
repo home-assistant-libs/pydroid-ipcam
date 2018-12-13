@@ -234,6 +234,12 @@ class PyDroidIPCam(object):
         Return a coroutine.
         """
         return self.change_setting('quality', quality)
+    
+    def set_motion_detect(self, activate=True):
+        """Set motion detection on/off.
+        Return a coroutine.
+        """
+        return self.change_setting('motion_detect', activate)
 
     def set_orientation(self, orientation='landscape'):
         """Set the video orientation.

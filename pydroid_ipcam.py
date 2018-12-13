@@ -57,12 +57,12 @@ class PyDroidIPCam:
         data = None
 
         try:
-            response = await self.websession.get(url, auth=self._auth, timeout=self._timeout)
-            if response.status == 200:
-                if response.headers['content-type'] == 'application/json':
-                    data = await response.json()
-                else:
-                    data = await response.text()
+            async with self.websession.get(url, auth=self._auth, timeout=self._timeout) as response:
+                if response.status == 200:
+                    if response.headers['content-type'] == 'application/json':
+                        data = await response.json()
+                    else:
+                        data = await response.text()
 
         except (asyncio.TimeoutError, aiohttp.ClientError) as error:
             _LOGGER.error('Failed to communicate with IP Webcam: %s', error)

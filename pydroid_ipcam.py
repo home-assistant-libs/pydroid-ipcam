@@ -12,7 +12,7 @@ ALLOWED_ORIENTATIONS = [
 ]
 
 
-class PyDroidIPCam(object):
+class PyDroidIPCam:
     """The Android device running IP Webcam."""
 
     def __init__(self, loop, websession, host, port, username=None,
@@ -72,8 +72,7 @@ class PyDroidIPCam(object):
         self._available = True
         if isinstance(data, str):
             return data.find("Ok") != -1
-        else:
-            return data
+        return data
 
     async def update(self):
         """Fetch the latest data from IP Webcam."""
@@ -99,7 +98,7 @@ class PyDroidIPCam(object):
             except ValueError:
                 val = val
 
-            if val == 'on' or val == 'off':
+            if val in ('on', 'off'):
                 val = (val == 'on')
 
             settings[key] = val
@@ -135,7 +134,7 @@ class PyDroidIPCam(object):
                 except ValueError:
                     subval = subval
 
-                if subval == 'on' or subval == 'off':
+                if val in ('on', 'off'):
                     subval = (subval == 'on')
 
                 available[key].append(subval)
@@ -229,7 +228,7 @@ class PyDroidIPCam(object):
         Return a coroutine.
         """
         return self.change_setting('quality', quality)
-    
+
     def set_motion_detect(self, activate=True):
         """Set motion detection on/off.
         Return a coroutine.

@@ -3,8 +3,7 @@ import asyncio
 import logging
 
 import aiohttp
-import async_timeout
-import yarl
+from yarl import URL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -13,7 +12,7 @@ ALLOWED_ORIENTATIONS = [
 ]
 
 
-class PyDroidIPCam(object):
+class PyDroidIPCam:
     """The Android device running IP Webcam."""
 
     def __init__(self, loop, websession, host, port, username=None,
@@ -52,21 +51,18 @@ class PyDroidIPCam(object):
         """Return True if is available."""
         return self._available
 
-    @asyncio.coroutine
-    def _request(self, path):
+    async def _request(self, path):
         """Make the actual request and return the parsed response."""
         url = '{}{}'.format(self.base_url, path)
         data = None
 
         try:
-            with async_timeout.timeout(self._timeout, loop=self.loop):
-                response = yield from self.websession.get(url, auth=self._auth)
-
+            async with self.websession.get(url, auth=self._auth, timeout=self._timeout) as response:
                 if response.status == 200:
                     if response.headers['content-type'] == 'application/json':
-                        data = yield from response.json()
+                        data = await response.json()
                     else:
-                        data = yield from response.text()
+                        data = await response.text()
 
         except (asyncio.TimeoutError, aiohttp.ClientError) as error:
             _LOGGER.error('Failed to communicate with IP Webcam: %s', error)
@@ -76,18 +72,16 @@ class PyDroidIPCam(object):
         self._available = True
         if isinstance(data, str):
             return data.find("Ok") != -1
-        else:
-            return data
+        return data
 
-    @asyncio.coroutine
-    def update(self):
+    async def update(self):
         """Fetch the latest data from IP Webcam."""
-        status_data = yield from self._request('/status.json?show_avail=1')
+        status_data = await self._request('/status.json?show_avail=1')
 
         if status_data:
             self.status_data = status_data
 
-            sensor_data = yield from self._request('/sensors.json')
+            sensor_data = await self._request('/sensors.json')
             if sensor_data:
                 self.sensor_data = sensor_data
 
@@ -104,7 +98,7 @@ class PyDroidIPCam(object):
             except ValueError:
                 val = val
 
-            if val == 'on' or val == 'off':
+            if val in ('on', 'off'):
                 val = (val == 'on')
 
             settings[key] = val
@@ -140,7 +134,7 @@ class PyDroidIPCam(object):
                 except ValueError:
                     subval = subval
 
-                if subval == 'on' or subval == 'off':
+                if val in ('on', 'off'):
                     subval = (subval == 'on')
 
                 available[key].append(subval)
@@ -196,7 +190,7 @@ class PyDroidIPCam(object):
         """
         path = '/startvideo?force=1' if record else '/stopvideo?force=1'
         if record and tag is not None:
-            path = '/startvideo?force=1&tag={}'.format(yarl.quote(tag))
+            path = '/startvideo?force=1&tag={}'.format(URL(tag).raw_path)
 
         return self._request(path)
 
@@ -234,7 +228,7 @@ class PyDroidIPCam(object):
         Return a coroutine.
         """
         return self.change_setting('quality', quality)
-    
+
     def set_motion_detect(self, activate=True):
         """Set motion detection on/off.
         Return a coroutine.

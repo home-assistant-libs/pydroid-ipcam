@@ -11,22 +11,26 @@ ALLOWED_ORIENTATIONS = [
     'landscape', 'upsidedown', 'portrait', 'upsidedown_portrait'
 ]
 
+DEFAULT_PORT = 8080
+DEFAULT_SSL = True
+
 
 class PyDroidIPCam:
     """The Android device running IP Webcam."""
 
-    def __init__(self, loop, websession, host, port, username=None,
-                 password=None, timeout=10):
+    def __init__(self, loop, websession, host, port=DEFAULT_PORT, username=None,
+                 password=None, timeout=10, ssl=DEFAULT_SSL):
         """Initialize the data oject."""
         self.loop = loop
         self.websession = websession
         self.status_data = None
         self.sensor_data = None
         self._host = host
-        self._port = port
+        self._port = port if port is not None else DEFAULT_PORT
         self._auth = None
         self._timeout = None
         self._available = True
+        self._ssl = ssl if ssl is not None else DEFAULT_SSL
 
         if username and password:
             self._auth = aiohttp.BasicAuth(username, password=password)
@@ -34,7 +38,8 @@ class PyDroidIPCam:
     @property
     def base_url(self):
         """Return the base url for endpoints."""
-        return "http://{}:{}".format(self._host, self._port)
+        protocol = "https" if self._ssl else "http"
+        return "{}://{}:{}".format(protocol, self._host, self._port)
 
     @property
     def mjpeg_url(self):

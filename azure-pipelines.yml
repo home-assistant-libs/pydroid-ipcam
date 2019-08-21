@@ -13,7 +13,7 @@ jobs:
 - job: "Tox"
 
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-latest'
   strategy:
     matrix:
       Python36:

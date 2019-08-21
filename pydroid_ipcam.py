@@ -11,26 +11,23 @@ ALLOWED_ORIENTATIONS = [
     'landscape', 'upsidedown', 'portrait', 'upsidedown_portrait'
 ]
 
-DEFAULT_PORT = 8080
-DEFAULT_SSL = True
-
 
 class PyDroidIPCam:
     """The Android device running IP Webcam."""
 
-    def __init__(self, loop, websession, host, port=DEFAULT_PORT, username=None,
-                 password=None, timeout=10, ssl=DEFAULT_SSL):
+    def __init__(self, loop, websession, host, port=8080, username=None,
+                 password=None, timeout=10, ssl=True):
         """Initialize the data oject."""
         self.loop = loop
         self.websession = websession
         self.status_data = None
         self.sensor_data = None
         self._host = host
-        self._port = port if port is not None else DEFAULT_PORT
+        self._port = port
         self._auth = None
         self._timeout = None
         self._available = True
-        self._ssl = ssl if ssl is not None else DEFAULT_SSL
+        self._ssl = ssl
 
         if username and password:
             self._auth = aiohttp.BasicAuth(username, password=password)

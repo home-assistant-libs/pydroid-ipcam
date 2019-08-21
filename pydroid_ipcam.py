@@ -15,8 +15,8 @@ ALLOWED_ORIENTATIONS = [
 class PyDroidIPCam:
     """The Android device running IP Webcam."""
 
-    def __init__(self, loop, websession, host, port, username=None,
-                 password=None, timeout=10):
+    def __init__(self, loop, websession, host, port=8080, username=None,
+                 password=None, timeout=10, ssl=True):
         """Initialize the data oject."""
         self.loop = loop
         self.websession = websession
@@ -27,6 +27,7 @@ class PyDroidIPCam:
         self._auth = None
         self._timeout = None
         self._available = True
+        self._ssl = ssl
 
         if username and password:
             self._auth = aiohttp.BasicAuth(username, password=password)
@@ -34,17 +35,18 @@ class PyDroidIPCam:
     @property
     def base_url(self):
         """Return the base url for endpoints."""
-        return "http://{}:{}".format(self._host, self._port)
+        protocol = "https" if self._ssl else "http"
+        return f"{protocol}://{self._host}:{self._port}"
 
     @property
     def mjpeg_url(self):
         """Return mjpeg url."""
-        return "{}/video".format(self.base_url)
+        return f"{self.base_url}/video"
 
     @property
     def image_url(self):
         """Return snapshot image url."""
-        return "{}/shot.jpg".format(self.base_url)
+        return f"{self.base_url}/shot.jpg"
 
     @property
     def available(self):
@@ -53,7 +55,7 @@ class PyDroidIPCam:
 
     async def _request(self, path):
         """Make the actual request and return the parsed response."""
-        url = '{}{}'.format(self.base_url, path)
+        url = f'{self.base_url}{path}'
         data = None
 
         try:
@@ -165,7 +167,7 @@ class PyDroidIPCam:
             payload = 'on' if val else 'off'
         else:
             payload = val
-        return self._request('/settings/{}?set={}'.format(key, payload))
+        return self._request(f'/settings/{key}?set={payload}')
 
     def torch(self, activate=True):
         """Enable/disable the torch.
@@ -190,7 +192,7 @@ class PyDroidIPCam:
         """
         path = '/startvideo?force=1' if record else '/stopvideo?force=1'
         if record and tag is not None:
-            path = '/startvideo?force=1&tag={}'.format(URL(tag).raw_path)
+            path = f'/startvideo?force=1&tag={URL(tag).raw_path}'
 
         return self._request(path)
 
@@ -250,7 +252,7 @@ class PyDroidIPCam:
 
         Return a coroutine.
         """
-        return self._request('/settings/ptz?zoom={}'.format(zoom))
+        return self._request(f'/settings/ptz?zoom={zoom}')
 
     def set_scenemode(self, scenemode='auto'):
         """Set the video scene mode.

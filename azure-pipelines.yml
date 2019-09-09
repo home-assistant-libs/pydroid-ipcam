@@ -4,9 +4,17 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger:
-- master
+  branches:
+    include:
+    - master
+  tags:
+    include:
+    - '*'
 pr:
 - master
+variables:
+- group: twine
+
 
 jobs:
 
@@ -25,7 +33,41 @@ jobs:
     displayName: 'Use Python $(python.version)'
     inputs:
       versionSpec: '$(python.version)'
-  - script: pip install tox
+  - script: |
+      pip install tox
     displayName: 'Install Tox'
-  - script: tox
+  - script: |
+      tox
     displayName: 'Run Tox'
+
+- job: 'Release'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags'))
+  dependsOn:
+  - 'Tox'
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - task: UsePythonVersion@0
+    displayName: 'Use Python 3.7'
+    inputs:
+      versionSpec: '3.7'
+  - script: |
+      setup_version="$(python setup.py -V)"
+      branch_version="$(Build.SourceBranchName)"
+      if [ "${setup_version}" != "${branch_version}" ]; then
+        echo "Version of tag ${branch_version} don't match with ${setup_version}!"
+        exit 1
+      fi
+    displayName: 'Check version of branch/tag'
+  - script: |
+      pip install twine wheel
+    displayName: 'Install twine'
+  - script: |
+      python setup.py sdist bdist_wheel
+    displayName: 'Build package'
+  - script: |
+      export TWINE_USERNAME="$(twineUser)"
+      export TWINE_PASSWORD="$(twinePassword)"
+
+      twine upload dist/*
+    displayName: 'Upload pypi'

@@ -1,7 +1,7 @@
-from setuptools import setup
+"""PyDroid IPCam Setup."""
+from pathlib import Path
 
-with open("README.rst") as f:
-    long_description = f.read()
+from setuptools import setup
 
 VERSION = "1.1"
 
@@ -14,7 +14,8 @@ setup(
     url="https://github.com/pvizeli/pydroid-ipcam",
     download_url="https://github.com/pvizeli/pydroid-ipcam/tarball/" + VERSION,
     description=("A asyncio library for handling android ipcam"),
-    long_description=long_description,
+    long_description=Path("README.md").read_text(),
+    long_description_content_type="text/markdown",
     classifiers=[
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",

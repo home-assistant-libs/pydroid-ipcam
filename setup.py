@@ -3,7 +3,7 @@ from setuptools import setup
 with open("README.rst") as f:
     long_description = f.read()
 
-VERSION = "1.0"
+VERSION = "1.1"
 
 setup(
     name="pydroid-ipcam",

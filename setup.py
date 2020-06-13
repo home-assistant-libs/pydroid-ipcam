@@ -11,9 +11,9 @@ setup(
     license="BSD License",
     author="Pascal Vizeli",
     author_email="pvizeli@syshack.ch",
-    url="https://github.com/pvizeli/pydroid-ipcam",
-    download_url="https://github.com/pvizeli/pydroid-ipcam/tarball/" + VERSION,
-    description=("A asyncio library for handling android ipcam"),
+    url="https://github.com/home-assistant-libs/pydroid-ipcam",
+    download_url="https://github.com/home-assistant-libs/pydroid-ipcam/releases/tag/" + VERSION,
+    description=("Library for handling the Android IP Webcam app"),
     long_description=Path("README.md").read_text(),
     long_description_content_type="text/markdown",
     classifiers=[

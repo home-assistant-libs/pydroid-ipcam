@@ -50,6 +50,11 @@ class PyDroidIPCam:
         return f"{self.base_url}/video"
 
     @property
+    def h264_url(self) -> str:
+        """Return h264 url."""
+        return f"rtsp://{self._host}:{self._port}/h264_pcm.sdp"
+
+    @property
     def image_url(self) -> str:
         """Return snapshot image url."""
         return f"{self.base_url}/shot.jpg"

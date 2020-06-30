@@ -1,4 +1,4 @@
-"""PyDroidIPCam api for android ipcam."""
+"""PyDroidIPCam API for the Android IP Webcam app."""
 import asyncio
 import logging
 from typing import Any, Awaitable, Dict, List, Optional, Tuple, Union
@@ -40,7 +40,7 @@ class PyDroidIPCam:
 
     @property
     def base_url(self) -> str:
-        """Return the base url for endpoints."""
+        """Return the base URL for endpoints."""
         protocol = "https" if self._ssl else "http"
         return f"{protocol}://{self._host}:{self._port}"
 
@@ -56,7 +56,7 @@ class PyDroidIPCam:
 
     @property
     def image_url(self) -> str:
-        """Return snapshot image url."""
+        """Return snapshot image URL."""
         return f"{self.base_url}/shot.jpg"
 
     @property

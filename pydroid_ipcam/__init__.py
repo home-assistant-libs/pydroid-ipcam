@@ -31,7 +31,7 @@ class PyDroidIPCam:
         self._host: str = host
         self._port: int = port
         self._auth: Optional[aiohttp.BasicAuth] = None
-        self._timeout: int = timeout
+        self._timeout: aiohttp.ClientTimeout = aiohttp.ClientTimeout(total=timeout)
         self._available: bool = True
         self._ssl: bool = ssl
 

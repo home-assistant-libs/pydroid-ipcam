@@ -1,35 +1,27 @@
-"""PyDroid IPCam Setup."""
-from pathlib import Path
+from setuptools import setup, find_packages
 
-from setuptools import setup
 
-VERSION = "1.1"
+long_description = open("README.md").read()
 
 setup(
     name="pydroid-ipcam",
-    version=VERSION,
-    license="BSD License",
+    version="1.2.0",
+    license="Apache License 2.0",
+    url="https://github.com/home-assistant-libs/pydroid-ipcam",
     author="Pascal Vizeli",
     author_email="pvizeli@syshack.ch",
-    url="https://github.com/home-assistant-libs/pydroid-ipcam",
-    download_url="https://github.com/home-assistant-libs/pydroid-ipcam/releases/tag/" + VERSION,
-    description=("Library for handling the Android IP Webcam app"),
-    long_description=Path("README.md").read_text(),
+    description="Library for handling the Android IP Webcam app",
+    long_description=long_description,
     long_description_content_type="text/markdown",
-    classifiers=[
-        "Programming Language :: Python",
-        "Topic :: Software Development :: Libraries :: Python Modules",
-        "Topic :: Scientific/Engineering :: Atmospheric Science",
-        "License :: OSI Approved :: BSD License",
-        "Operating System :: OS Independent",
-        "Development Status :: 5 - Production/Stable",
-        "Intended Audience :: Developers",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-    ],
-    keywords=["android", "ipcam", "api", "asyncio"],
-    zip_safe=False,
+    packages=["pydroid_ipcam"],
+    zip_safe=True,
     platforms="any",
-    py_modules=["pydroid_ipcam"],
-    install_requires=["aiohttp", "yarl"],
+    install_requires=list(val.strip() for val in open("requirements.txt")),
+    classifiers=[
+        "Intended Audience :: Developers",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+    ],
 )

@@ -111,7 +111,7 @@ class PyDroidIPCam:
             try:
                 val = float(val)
             except ValueError:
-                val = val
+                pass
 
             if val in ("on", "off"):
                 val = val == "on"
@@ -147,7 +147,7 @@ class PyDroidIPCam:
                 try:
                     subval = float(subval)
                 except ValueError:
-                    subval = subval
+                    pass
 
                 if val in ("on", "off"):
                     subval = subval == "on"

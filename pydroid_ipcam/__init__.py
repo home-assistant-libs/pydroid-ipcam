@@ -24,7 +24,7 @@ class PyDroidIPCam:
         timeout: int = 10,
         ssl: bool = True,
     ):
-        """Initialize the data oject."""
+        """Initialize the data object."""
         self.websession: aiohttp.ClientSession = websession
         self.status_data = None
         self.sensor_data = None
@@ -102,7 +102,7 @@ class PyDroidIPCam:
 
     @property
     def current_settings(self) -> Dict[str, Any]:
-        """Return dict with all config include."""
+        """Return dict with all config included."""
         settings = {}
         if not self.status_data:
             return settings

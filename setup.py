@@ -1,8 +1,10 @@
 """Set up pydroid_ipcam package."""
-from setuptools import setup, find_packages
+from setuptools import setup
 
 
 long_description = open("README.md").read()
+
+REQUIRES = ["aiohttp>=3.6.2"]
 
 setup(
     name="pydroid-ipcam",
@@ -17,7 +19,7 @@ setup(
     packages=["pydroid_ipcam"],
     zip_safe=True,
     platforms="any",
-    install_requires=list(val.strip() for val in open("requirements.txt")),
+    install_requires=REQUIRES,
     classifiers=[
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",

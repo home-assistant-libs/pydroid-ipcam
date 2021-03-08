@@ -1,7 +1,7 @@
 """PyDroidIPCam API for the Android IP Webcam app."""
 import asyncio
 import logging
-from typing import Any, Awaitable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import aiohttp
 from yarl import URL
@@ -26,8 +26,8 @@ class PyDroidIPCam:
     ):
         """Initialize the data object."""
         self.websession: aiohttp.ClientSession = websession
-        self.status_data = None
-        self.sensor_data = None
+        self.status_data: Optional[Dict[str, Any]] = None
+        self.sensor_data: Optional[Dict[str, Any]] = None
         self._host: str = host
         self._port: int = port
         self._auth: Optional[aiohttp.BasicAuth] = None
@@ -64,10 +64,10 @@ class PyDroidIPCam:
         """Return True if is available."""
         return self._available
 
-    async def _request(self, path: str) -> Union[bool, Dict[str, Any]]:
+    async def _request(self, path: str) -> Union[bool, Dict[str, Any], None]:
         """Make the actual request and return the parsed response."""
         url: str = f"{self.base_url}{path}"
-        data = None
+        data: Union[bool, Dict[str, Any], None] = None
 
         try:
             async with self.websession.get(
@@ -77,7 +77,7 @@ class PyDroidIPCam:
                     if response.headers["content-type"] == "application/json":
                         data = await response.json()
                     else:
-                        data = await response.text().find("Ok") != -1
+                        data = (await response.text()).find("Ok") != -1
 
         except (asyncio.TimeoutError, aiohttp.ClientError) as error:
             _LOGGER.error("Failed to communicate with IP Webcam: %s", error)
@@ -89,21 +89,25 @@ class PyDroidIPCam:
 
     async def update(self) -> None:
         """Fetch the latest data from IP Webcam."""
-        status_data = await self._request("/status.json?show_avail=1")
+        status_data = cast(
+            Optional[Dict[str, Any]], await self._request("/status.json?show_avail=1")
+        )
 
         if not status_data:
             return
 
         self.status_data = status_data
 
-        sensor_data = await self._request("/sensors.json")
+        sensor_data = cast(
+            Optional[Dict[str, Any]], await self._request("/sensors.json")
+        )
         if sensor_data:
             self.sensor_data = sensor_data
 
     @property
     def current_settings(self) -> Dict[str, Any]:
         """Return dict with all config included."""
-        settings = {}
+        settings: Dict[str, Any] = {}
         if not self.status_data:
             return settings
 
@@ -137,7 +141,7 @@ class PyDroidIPCam:
     @property
     def available_settings(self) -> Dict[str, List[Any]]:
         """Return dict of lists with all available config settings."""
-        available = {}
+        available: Dict[str, List[Any]] = {}
         if not self.status_data:
             return available
 
@@ -156,12 +160,12 @@ class PyDroidIPCam:
 
         return available
 
-    def export_sensor(self, sensor) -> Tuple(str, Any):
+    def export_sensor(self, sensor) -> Tuple[Optional[str], Any]:
         """Return (value, unit) from a sensor node."""
         value = None
         unit = None
         try:
-            container = self.sensor_data.get(sensor)
+            container: Dict[str, Any] = self.sensor_data.get(sensor)  # type: ignore
             unit = container.get("unit")
             data_point = container.get("data", [[0, [0.0]]])
             if data_point and data_point[-1]:
@@ -171,67 +175,68 @@ class PyDroidIPCam:
 
         return (value, unit)
 
-    def change_setting(self, key: str, val: Union[str, int, bool]) -> Awaitable[bool]:
+    async def change_setting(self, key: str, val: Union[str, int, bool]) -> bool:
         """Change a setting."""
+        payload: Union[str, int, None] = None
         if isinstance(val, bool):
             payload = "on" if val else "off"
         else:
             payload = val
-        return self._request(f"/settings/{key}?set={payload}")
+        return cast(bool, await self._request(f"/settings/{key}?set={payload}"))
 
-    def torch(self, activate: bool = True) -> Awaitable[bool]:
+    async def torch(self, activate: bool = True) -> bool:
         """Enable/disable the torch."""
         path = "/enabletorch" if activate else "/disabletorch"
-        return self._request(path)
+        return cast(bool, await self._request(path))
 
-    def focus(self, activate: bool = True) -> Awaitable[bool]:
+    async def focus(self, activate: bool = True) -> bool:
         """Enable/disable camera focus."""
         path = "/focus" if activate else "/nofocus"
-        return self._request(path)
+        return cast(bool, await self._request(path))
 
-    def record(self, record: bool = True, tag: str = None) -> Awaitable[bool]:
+    async def record(self, record: bool = True, tag: str = None) -> bool:
         """Enable/disable recording."""
         path = "/startvideo?force=1" if record else "/stopvideo?force=1"
         if record and tag is not None:
             path = f"/startvideo?force=1&tag={URL(tag).raw_path}"
-        return self._request(path)
+        return cast(bool, await self._request(path))
 
-    def set_front_facing_camera(self, activate: bool = True) -> Awaitable[bool]:
+    async def set_front_facing_camera(self, activate: bool = True) -> bool:
         """Enable/disable the front-facing camera."""
-        return self.change_setting("ffc", activate)
+        return await self.change_setting("ffc", activate)
 
-    def set_night_vision(self, activate: bool = True) -> Awaitable[bool]:
+    async def set_night_vision(self, activate: bool = True) -> bool:
         """Enable/disable night vision."""
-        return self.change_setting("night_vision", activate)
+        return await self.change_setting("night_vision", activate)
 
-    def set_overlay(self, activate: bool = True) -> Awaitable[bool]:
+    async def set_overlay(self, activate: bool = True) -> bool:
         """Enable/disable the video overlay."""
-        return self.change_setting("overlay", activate)
+        return await self.change_setting("overlay", activate)
 
-    def set_gps_active(self, activate: bool = True) -> Awaitable[bool]:
+    async def set_gps_active(self, activate: bool = True) -> bool:
         """Enable/disable GPS."""
-        return self.change_setting("gps_active", activate)
+        return await self.change_setting("gps_active", activate)
 
-    def set_quality(self, quality: int = 100) -> Awaitable[bool]:
+    async def set_quality(self, quality: int = 100) -> bool:
         """Set the video quality."""
-        return self.change_setting("quality", quality)
+        return await self.change_setting("quality", quality)
 
-    def set_motion_detect(self, activate: bool = True) -> Awaitable[bool]:
+    async def set_motion_detect(self, activate: bool = True) -> bool:
         """Set motion detection on/off."""
-        return self.change_setting("motion_detect", activate)
+        return await self.change_setting("motion_detect", activate)
 
-    def set_orientation(self, orientation: str = "landscape") -> Awaitable[bool]:
+    async def set_orientation(self, orientation: str = "landscape") -> bool:
         """Set the video orientation."""
         if orientation not in ALLOWED_ORIENTATIONS:
             raise RuntimeError(f"Invalid orientation {orientation}")
-        return self.change_setting("orientation", orientation)
+        return await self.change_setting("orientation", orientation)
 
-    def set_zoom(self, zoom: int) -> Awaitable[bool]:
+    async def set_zoom(self, zoom: int) -> bool:
         """Set the zoom level."""
-        return self._request(f"/settings/ptz?zoom={zoom}")
+        return cast(bool, await self._request(f"/settings/ptz?zoom={zoom}"))
 
-    def set_scenemode(self, scenemode: str = "auto") -> Awaitable[bool]:
+    async def set_scenemode(self, scenemode: str = "auto") -> bool:
         """Set the video scene mode."""
         if scenemode not in self.available_settings["scenemode"]:
             raise RuntimeError(f"Invalid scene mode {scenemode}")
-        return self.change_setting("scenemode", scenemode)
+        return await self.change_setting("scenemode", scenemode)

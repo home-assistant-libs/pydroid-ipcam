@@ -160,7 +160,7 @@ class PyDroidIPCam:
 
         return available
 
-    def export_sensor(self, sensor) -> Tuple[Optional[str], Any]:
+    def export_sensor(self, sensor: str) -> Tuple[Optional[str], Any]:
         """Return (value, unit) from a sensor node."""
         value = None
         unit = None
@@ -194,7 +194,7 @@ class PyDroidIPCam:
         path = "/focus" if activate else "/nofocus"
         return cast(bool, await self._request(path))
 
-    async def record(self, record: bool = True, tag: str = None) -> bool:
+    async def record(self, record: bool = True, tag: Optional[str] = None) -> bool:
         """Enable/disable recording."""
         path = "/startvideo?force=1" if record else "/stopvideo?force=1"
         if record and tag is not None:

@@ -1,3 +1,4 @@
-flake8==4.0.1
-pylint==2.11.1
 black==21.10b0
+flake8==4.0.1
+mypy==0.910
+pylint==2.11.1

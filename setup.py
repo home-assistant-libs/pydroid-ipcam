@@ -1,10 +1,12 @@
 """Set up pydroid_ipcam package."""
+from pathlib import Path
+
 from setuptools import setup
 
-
-long_description = open("README.md").read()
-
+PROJECT_DIR = Path(__file__).parent.resolve()
+README_FILE = PROJECT_DIR / "README.md"
 REQUIRES = ["aiohttp>=3.6.2"]
+
 
 setup(
     name="pydroid-ipcam",
@@ -14,7 +16,7 @@ setup(
     author="Pascal Vizeli",
     author_email="pvizeli@syshack.ch",
     description="Library for handling the Android IP Webcam app",
-    long_description=long_description,
+    long_description=README_FILE.read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
     packages=["pydroid_ipcam"],
     python_requires=">=3.8",

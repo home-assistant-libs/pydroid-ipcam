@@ -17,6 +17,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=["pydroid_ipcam"],
+    python_requires=">=3.8",
     zip_safe=True,
     platforms="any",
     install_requires=REQUIRES,

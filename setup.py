@@ -19,6 +19,7 @@ setup(
     long_description=README_FILE.read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
     packages=["pydroid_ipcam"],
+    package_data={"pydroid_ipcam": ["py.typed"]},
     python_requires=">=3.8",
     zip_safe=True,
     platforms="any",

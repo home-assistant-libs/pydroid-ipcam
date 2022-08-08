@@ -6,6 +6,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union, cast
 import aiohttp
 from yarl import URL
 
+from .exceptions import CannotConnect, Unauthorized
+
 _LOGGER = logging.getLogger(__name__)
 
 ALLOWED_ORIENTATIONS = ["landscape", "upsidedown", "portrait", "upsidedown_portrait"]
@@ -32,7 +34,6 @@ class PyDroidIPCam:
         self._port: int = port
         self._auth: Optional[aiohttp.BasicAuth] = None
         self._timeout: aiohttp.ClientTimeout = aiohttp.ClientTimeout(total=timeout)
-        self._available: bool = True
         self._ssl: bool = ssl
 
         if username and password:
@@ -59,11 +60,6 @@ class PyDroidIPCam:
         """Return snapshot image URL."""
         return f"{self.base_url}/shot.jpg"
 
-    @property
-    def available(self) -> bool:
-        """Return True if is available."""
-        return self._available
-
     async def _request(self, path: str) -> Union[bool, Dict[str, Any], None]:
         """Make the actual request and return the parsed response."""
         url: str = f"{self.base_url}{path}"
@@ -71,7 +67,7 @@ class PyDroidIPCam:
 
         try:
             async with self.websession.get(
-                url, auth=self._auth, timeout=self._timeout
+                url, auth=self._auth, timeout=self._timeout, raise_for_status=True
             ) as response:
                 if response.status == 200:
                     if response.headers["content-type"] == "application/json":
@@ -79,11 +75,12 @@ class PyDroidIPCam:
                     else:
                         data = (await response.text()).find("Ok") != -1
 
+        except aiohttp.ClientResponseError as error:
+            _LOGGER.error("Incorrect username or password")
+            raise Unauthorized from error
         except (asyncio.TimeoutError, aiohttp.ClientError) as error:
             _LOGGER.error("Failed to communicate with IP Webcam: %s", error)
-            self._available = False
-        else:
-            self._available = True
+            raise CannotConnect from error
 
         return data
 

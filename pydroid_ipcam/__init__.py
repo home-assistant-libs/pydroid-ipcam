@@ -1,14 +1,11 @@
 """PyDroidIPCam API for the Android IP Webcam app."""
 import asyncio
-import logging
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import aiohttp
 from yarl import URL
 
-from .exceptions import CannotConnect, Unauthorized
-
-_LOGGER = logging.getLogger(__name__)
+from .exceptions import CannotConnect, PyDroidIPCamException, Unauthorized
 
 ALLOWED_ORIENTATIONS = ["landscape", "upsidedown", "portrait", "upsidedown_portrait"]
 
@@ -69,18 +66,19 @@ class PyDroidIPCam:
             async with self.websession.get(
                 url, auth=self._auth, timeout=self._timeout, raise_for_status=True
             ) as response:
-                if response.status == 200:
-                    if response.headers["content-type"] == "application/json":
-                        data = await response.json()
-                    else:
-                        data = (await response.text()).find("Ok") != -1
+                if response.headers["content-type"] == "application/json":
+                    data = await response.json()
+                else:
+                    data = (await response.text()).find("Ok") != -1
 
         except aiohttp.ClientResponseError as error:
-            _LOGGER.error("Incorrect username or password")
-            raise Unauthorized from error
+            if error.status == 401:
+                raise Unauthorized("Username or password are incorrect") from error
+            raise PyDroidIPCamException(
+                f"code: {error.code}, error: {error.message}"
+            ) from error
         except (asyncio.TimeoutError, aiohttp.ClientError) as error:
-            _LOGGER.error("Failed to communicate with IP Webcam: %s", error)
-            raise CannotConnect from error
+            raise CannotConnect(error) from error
 
         return data
 

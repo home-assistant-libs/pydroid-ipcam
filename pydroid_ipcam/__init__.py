@@ -73,7 +73,7 @@ class PyDroidIPCam:
 
         except aiohttp.ClientResponseError as error:
             if error.status == 401:
-                raise Unauthorized("Username or password are incorrect") from error
+                raise Unauthorized("Incorrect username or password") from error
             raise PyDroidIPCamException(
                 f"code: {error.code}, error: {error.message}"
             ) from error

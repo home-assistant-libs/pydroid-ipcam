@@ -57,10 +57,10 @@ class PyDroidIPCam:
         """Return snapshot image URL."""
         return f"{self.base_url}/shot.jpg"
 
-    async def _request(self, path: str) -> Union[bool, Dict[str, Any], None]:
+    async def _request(self, path: str) -> Union[bool, Dict[str, Any]]:
         """Make the actual request and return the parsed response."""
         url: str = f"{self.base_url}{path}"
-        data: Union[bool, Dict[str, Any], None] = None
+        data: Union[bool, Dict[str, Any]]
 
         try:
             async with self.websession.get(

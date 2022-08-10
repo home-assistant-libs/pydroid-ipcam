@@ -148,6 +148,19 @@ class PyDroidIPCam:
 
         return (value, unit)
 
+    def get_sensor_value(self, sensor: str) -> Union[str, int, float, None]:
+        """Return the value from a sensor node."""
+        if sensor_info := self.sensor_data.get(sensor):
+            if "data" in sensor_info:
+                return cast(Union[str, int, float], sensor_info["data"][-1][-1][0])
+        return None
+
+    def get_sensor_unit(self, sensor: str) -> Optional[str]:
+        """Return the unit from a sensor node."""
+        if sensor_info := self.sensor_data.get(sensor):
+            return cast(Optional[str], sensor_info.get("unit"))
+        return None
+
     async def change_setting(self, key: str, val: Union[str, int, bool]) -> bool:
         """Change a setting."""
         payload: Union[str, int, None] = None

@@ -1,6 +1,6 @@
 """PyDroidIPCam API for the Android IP Webcam app."""
 import asyncio
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 import aiohttp
 from yarl import URL
@@ -25,8 +25,8 @@ class PyDroidIPCam:
     ):
         """Initialize the data object."""
         self.websession: aiohttp.ClientSession = websession
-        self.status_data: Optional[Dict[str, Any]] = None
-        self.sensor_data: Optional[Dict[str, Any]] = None
+        self.status_data: Dict[str, Any] = {}
+        self.sensor_data: Dict[str, Dict[str, Any]] = {}
         self._host: str = host
         self._port: int = port
         self._auth: Optional[aiohttp.BasicAuth] = None
@@ -57,19 +57,14 @@ class PyDroidIPCam:
         """Return snapshot image URL."""
         return f"{self.base_url}/shot.jpg"
 
-    async def _request(self, path: str) -> Union[bool, Dict[str, Any]]:
+    async def _request(self, path: str) -> aiohttp.ClientResponse:
         """Make the actual request and return the parsed response."""
         url: str = f"{self.base_url}{path}"
-        data: Union[bool, Dict[str, Any]]
 
         try:
-            async with self.websession.get(
+            response = await self.websession.get(
                 url, auth=self._auth, timeout=self._timeout, raise_for_status=True
-            ) as response:
-                if response.headers["content-type"] == "application/json":
-                    data = await response.json()
-                else:
-                    data = (await response.text()).find("Ok") != -1
+            )
 
         except aiohttp.ClientResponseError as error:
             if error.status == 401:
@@ -80,31 +75,20 @@ class PyDroidIPCam:
         except (asyncio.TimeoutError, aiohttp.ClientError) as error:
             raise CannotConnect(error) from error
 
-        return data
+        return response
 
     async def update(self) -> None:
         """Fetch the latest data from IP Webcam."""
-        status_data = cast(
-            Optional[Dict[str, Any]], await self._request("/status.json?show_avail=1")
-        )
+        response = await self._request("/status.json?show_avail=1")
+        self.status_data = cast(Dict[str, Any], await response.json())
 
-        if not status_data:
-            return
-
-        self.status_data = status_data
-
-        sensor_data = cast(
-            Optional[Dict[str, Any]], await self._request("/sensors.json")
-        )
-        if sensor_data:
-            self.sensor_data = sensor_data
+        response = await self._request("/sensors.json")
+        self.sensor_data = cast(Dict[str, Any], await response.json())
 
     @property
     def current_settings(self) -> Dict[str, Any]:
         """Return dict with all config included."""
         settings: Dict[str, Any] = {}
-        if not self.status_data:
-            return settings
 
         for (key, val) in self.status_data.get("curvals", {}).items():
             try:
@@ -122,23 +106,17 @@ class PyDroidIPCam:
     @property
     def enabled_sensors(self) -> List[str]:
         """Return the enabled sensors."""
-        if self.sensor_data is None:
-            return []
-        return list(self.sensor_data.keys())
+        return list(self.sensor_data)
 
     @property
     def enabled_settings(self) -> List[str]:
         """Return the enabled settings."""
-        if self.status_data is None:
-            return []
-        return list(self.status_data.get("curvals", {}).keys())
+        return list(self.status_data.get("curvals", {}))
 
     @property
     def available_settings(self) -> Dict[str, List[Any]]:
         """Return dict of lists with all available config settings."""
         available: Dict[str, List[Any]] = {}
-        if not self.status_data:
-            return available
 
         for (key, val) in self.status_data.get("avail", {}).items():
             available[key] = []
@@ -155,20 +133,18 @@ class PyDroidIPCam:
 
         return available
 
-    def export_sensor(self, sensor: str) -> Tuple[Optional[str], Any]:
-        """Return (value, unit) from a sensor node."""
-        value = None
-        unit = None
-        try:
-            container: Dict[str, Any] = self.sensor_data.get(sensor)  # type: ignore
-            unit = container.get("unit")
-            data_point = container.get("data", [[0, [0.0]]])
-            if data_point and data_point[-1]:
-                value = data_point[-1][-1][0]
-        except (ValueError, KeyError, AttributeError):
-            pass
+    def get_sensor_value(self, sensor: str) -> Union[str, int, float, None]:
+        """Return the value from a sensor node."""
+        if sensor_info := self.sensor_data.get(sensor):
+            if "data" in sensor_info:
+                return cast(Union[str, int, float], sensor_info["data"][-1][-1][0])
+        return None
 
-        return (value, unit)
+    def get_sensor_unit(self, sensor: str) -> Optional[str]:
+        """Return the unit from a sensor node."""
+        if sensor_info := self.sensor_data.get(sensor):
+            return cast(Optional[str], sensor_info.get("unit"))
+        return None
 
     async def change_setting(self, key: str, val: Union[str, int, bool]) -> bool:
         """Change a setting."""
@@ -177,24 +153,28 @@ class PyDroidIPCam:
             payload = "on" if val else "off"
         else:
             payload = val
-        return cast(bool, await self._request(f"/settings/{key}?set={payload}"))
+        response = await self._request(f"/settings/{key}?set={payload}")
+        return "Ok" in (await response.text())
 
     async def torch(self, activate: bool = True) -> bool:
         """Enable/disable the torch."""
         path = "/enabletorch" if activate else "/disabletorch"
-        return cast(bool, await self._request(path))
+        response = await self._request(path)
+        return "Ok" in (await response.text())
 
     async def focus(self, activate: bool = True) -> bool:
         """Enable/disable camera focus."""
         path = "/focus" if activate else "/nofocus"
-        return cast(bool, await self._request(path))
+        response = await self._request(path)
+        return "Ok" in (await response.text())
 
     async def record(self, record: bool = True, tag: Optional[str] = None) -> bool:
         """Enable/disable recording."""
         path = "/startvideo?force=1" if record else "/stopvideo?force=1"
         if record and tag is not None:
             path = f"/startvideo?force=1&tag={URL(tag).raw_path}"
-        return cast(bool, await self._request(path))
+        response = await self._request(path)
+        return "Ok" in (await response.text())
 
     async def set_front_facing_camera(self, activate: bool = True) -> bool:
         """Enable/disable the front-facing camera."""
@@ -228,7 +208,8 @@ class PyDroidIPCam:
 
     async def set_zoom(self, zoom: int) -> bool:
         """Set the zoom level."""
-        return cast(bool, await self._request(f"/settings/ptz?zoom={zoom}"))
+        response = await self._request(f"/settings/ptz?zoom={zoom}")
+        return "Ok" in (await response.text())
 
     async def set_scenemode(self, scenemode: str = "auto") -> bool:
         """Set the video scene mode."""

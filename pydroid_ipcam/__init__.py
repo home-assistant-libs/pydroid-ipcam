@@ -106,12 +106,12 @@ class PyDroidIPCam:
     @property
     def enabled_sensors(self) -> List[str]:
         """Return the enabled sensors."""
-        return list(self.sensor_data.keys())
+        return list(self.sensor_data)
 
     @property
     def enabled_settings(self) -> List[str]:
         """Return the enabled settings."""
-        return list(self.status_data.get("curvals", {}).keys())
+        return list(self.status_data.get("curvals", {}))
 
     @property
     def available_settings(self) -> Dict[str, List[Any]]:
@@ -132,21 +132,6 @@ class PyDroidIPCam:
                 available[key].append(subval)
 
         return available
-
-    def export_sensor(self, sensor: str) -> Tuple[Optional[str], Any]:
-        """Return (value, unit) from a sensor node."""
-        value = None
-        unit = None
-        try:
-            container: Dict[str, Any] = self.sensor_data.get(sensor)  # type: ignore
-            unit = container.get("unit")
-            data_point = container.get("data", [[0, [0.0]]])
-            if data_point and data_point[-1]:
-                value = data_point[-1][-1][0]
-        except (ValueError, KeyError, AttributeError):
-            pass
-
-        return (value, unit)
 
     def get_sensor_value(self, sensor: str) -> Union[str, int, float, None]:
         """Return the value from a sensor node."""

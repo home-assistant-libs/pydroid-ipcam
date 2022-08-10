@@ -1,6 +1,6 @@
 """PyDroidIPCam API for the Android IP Webcam app."""
 import asyncio
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 
 import aiohttp
 from yarl import URL
@@ -154,19 +154,19 @@ class PyDroidIPCam:
         else:
             payload = val
         response = await self._request(f"/settings/{key}?set={payload}")
-        return cast(bool, "Ok" in (await response.text()))
+        return "Ok" in (await response.text())
 
     async def torch(self, activate: bool = True) -> bool:
         """Enable/disable the torch."""
         path = "/enabletorch" if activate else "/disabletorch"
         response = await self._request(path)
-        return cast(bool, "Ok" in (await response.text()))
+        return "Ok" in (await response.text())
 
     async def focus(self, activate: bool = True) -> bool:
         """Enable/disable camera focus."""
         path = "/focus" if activate else "/nofocus"
         response = await self._request(path)
-        return cast(bool, "Ok" in (await response.text()))
+        return "Ok" in (await response.text())
 
     async def record(self, record: bool = True, tag: Optional[str] = None) -> bool:
         """Enable/disable recording."""
@@ -174,7 +174,7 @@ class PyDroidIPCam:
         if record and tag is not None:
             path = f"/startvideo?force=1&tag={URL(tag).raw_path}"
         response = await self._request(path)
-        return cast(bool, "Ok" in (await response.text()))
+        return "Ok" in (await response.text())
 
     async def set_front_facing_camera(self, activate: bool = True) -> bool:
         """Enable/disable the front-facing camera."""
@@ -209,7 +209,7 @@ class PyDroidIPCam:
     async def set_zoom(self, zoom: int) -> bool:
         """Set the zoom level."""
         response = await self._request(f"/settings/ptz?zoom={zoom}")
-        return cast(bool, "Ok" in (await response.text()))
+        return "Ok" in (await response.text())
 
     async def set_scenemode(self, scenemode: str = "auto") -> bool:
         """Set the video scene mode."""

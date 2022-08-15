@@ -10,7 +10,7 @@ REQUIRES = ["aiohttp>=3.6.2"]
 
 setup(
     name="pydroid-ipcam",
-    version="1.3.1",
+    version="2.0.0",
     license="Apache License 2.0",
     url="https://github.com/home-assistant-libs/pydroid-ipcam",
     author="Pascal Vizeli",

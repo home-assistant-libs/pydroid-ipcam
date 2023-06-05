@@ -90,7 +90,7 @@ class PyDroidIPCam:
         """Return dict with all config included."""
         settings: Dict[str, Any] = {}
 
-        for (key, val) in self.status_data.get("curvals", {}).items():
+        for key, val in self.status_data.get("curvals", {}).items():
             try:
                 val = float(val)
             except ValueError:
@@ -118,7 +118,7 @@ class PyDroidIPCam:
         """Return dict of lists with all available config settings."""
         available: Dict[str, List[Any]] = {}
 
-        for (key, val) in self.status_data.get("avail", {}).items():
+        for key, val in self.status_data.get("avail", {}).items():
             available[key] = []
             for subval in val:
                 try:

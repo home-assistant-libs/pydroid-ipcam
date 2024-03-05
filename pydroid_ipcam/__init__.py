@@ -1,4 +1,5 @@
 """PyDroidIPCam API for the Android IP Webcam app."""
+
 import asyncio
 from typing import Any, Dict, List, Optional, Union, cast
 

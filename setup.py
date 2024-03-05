@@ -1,4 +1,5 @@
 """Set up pydroid_ipcam package."""
+
 from pathlib import Path
 
 from setuptools import setup

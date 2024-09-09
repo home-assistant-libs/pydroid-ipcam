@@ -50,17 +50,17 @@ class PyDroidIPCam:
 
     @property
     def audio_wav_url(self) -> str:
-        """Returns url that Waveform audio can be streamed from."""
+        """Return url that Waveform audio can be streamed from."""
         return f"{self.base_url}/audio.wav"
 
     @property
     def audio_aac_url(self) -> str:
-        """Returns url that AAC audio can be streamed from."""
+        """Return url that AAC audio can be streamed from."""
         return f"{self.base_url}/audio.aac"
 
     @property
     def audio_opus_url(self) -> str:
-        """Returns url that LibOPUS audio can be streamed from."""
+        """Return url that LibOPUS audio can be streamed from."""
         return f"{self.base_url}/audio.opus"
 
     @property

@@ -68,9 +68,15 @@ class PyDroidIPCam:
         video_codec: Literal["jpeg", "h264"] = "h264",
         audio_codec: Literal["ulaw", "alaw", "pcm", "opus", "aac"] = "opus",
     ) -> str:
-        """Return the RTSP URL for a given pair of video & audio codecs, using the developer-recommended h264 & opus if no arguments are supplied."""
+        """Return the RTSP URL for a given pair of video & audio codecs.
+
+        Use the developer-recommended h264 & opus if no arguments are supplied.
+        """
         rtsp_protocol = "rtsps" if self._ssl else "rtsp"
-        return f"{rtsp_protocol}://{self._host}:{self._port}/{video_codec}_{audio_codec}.sdp"
+        return (
+            f"{rtsp_protocol}://{self._host}:{self._port}/"
+            f"{video_codec}_{audio_codec}.sdp"
+       )
 
     @property
     def h264_url(self) -> str:

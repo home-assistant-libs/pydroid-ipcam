@@ -63,7 +63,11 @@ class PyDroidIPCam:
         """Return url that LibOPUS audio can be streamed from."""
         return f"{self.base_url}/audio.opus"
 
-    def get_rtsp_url(self, video_codec: Literal["jpeg", "h264"] = "h264", audio_codec: Literal["ulaw", "alaw", "pcm", "opus", "aac"] = "opus") -> str:
+    def get_rtsp_url(
+        self,
+        video_codec: Literal["jpeg", "h264"] = "h264",
+        audio_codec: Literal["ulaw", "alaw", "pcm", "opus", "aac"] = "opus",
+    ) -> str:
         """Return the RTSP URL for a given pair of video & audio codecs, using the developer-recommended h264 & opus if no arguments are supplied."""
         rtsp_protocol = "rtsps" if self._ssl else "rtsp"
         return f"{rtsp_protocol}://{self._host}:{self._port}/{video_codec}_{audio_codec}.sdp"

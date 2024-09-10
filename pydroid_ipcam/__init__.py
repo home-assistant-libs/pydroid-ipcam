@@ -1,7 +1,7 @@
 """PyDroidIPCam API for the Android IP Webcam app."""
 
 import asyncio
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast, Literal
 
 import aiohttp
 from yarl import URL
@@ -63,10 +63,15 @@ class PyDroidIPCam:
         """Return url that LibOPUS audio can be streamed from."""
         return f"{self.base_url}/audio.opus"
 
+    def get_rtsp_url(self, video_codec: Literal["jpeg", "h264"] = "h264", audio_codec: Literal["ulaw", "alaw", "pcm", "opus", "aac"] = "opus") -> str:
+        """Return the RTSP URL for a given pair of video & audio codecs."""
+        rtsp_protocol = "rtsps" if self._ssl else "rtsp"
+        return f"{rtsp_protocol}://{self._host}:{self._port}/{video_codec}_{audio_codec}.sdp"
+
     @property
     def h264_url(self) -> str:
         """Return h264 url."""
-        return f"rtsp://{self._host}:{self._port}/h264_pcm.sdp"
+        return self.get_rtsp_url("h264", "pcm")
 
     @property
     def image_url(self) -> str:

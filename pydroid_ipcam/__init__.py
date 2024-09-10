@@ -76,7 +76,7 @@ class PyDroidIPCam:
         return (
             f"{rtsp_protocol}://{self._host}:{self._port}/"
             f"{video_codec}_{audio_codec}.sdp"
-       )
+        )
 
     @property
     def h264_url(self) -> str:

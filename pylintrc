@@ -23,3 +23,4 @@ disable=
 
 max-args=9
 max-attributes=9
+max-positional-arguments=9

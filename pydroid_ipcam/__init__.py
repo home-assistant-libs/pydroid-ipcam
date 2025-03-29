@@ -73,8 +73,12 @@ class PyDroidIPCam:
         Use the developer-recommended h264 & opus if no arguments are supplied.
         """
         rtsp_protocol = "rtsps" if self._ssl else "rtsp"
+        if auth := self._auth:
+            credentials = f"{auth.login}:{auth.password}@"
+        else:
+            credentials = ""
         return (
-            f"{rtsp_protocol}://{self._host}:{self._port}/"
+            f"{rtsp_protocol}://{credentials}{self._host}:{self._port}/"
             f"{video_codec}_{audio_codec}.sdp"
         )
 

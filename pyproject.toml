@@ -1,0 +1,23 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=77.0"]
+
+[project]
+name = "pydroid-ipcam"
+version = "3.0.0"
+license = "Apache-2.0"
+description = "Library for handling the Android IP Webcam app"
+readme = "README.md"
+authors = [{ name = "Pascal Vizeli", email = "pvizeli@syshack.ch" }]
+requires-python = ">=3.9"
+classifiers = [
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = ["aiohttp>=3.6.2"]
+
+[project.urls]
+"Source code" = "https://github.com/home-assistant-libs/pydroid-ipcam"

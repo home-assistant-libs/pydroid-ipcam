@@ -9,7 +9,7 @@ license = "Apache-2.0"
 description = "Library for handling the Android IP Webcam app"
 readme = "README.md"
 authors = [{ name = "Pascal Vizeli", email = "pvizeli@syshack.ch" }]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",

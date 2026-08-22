@@ -30,14 +30,14 @@ class PyDroidIPCam:
         self.sensor_data: Dict[str, Dict[str, Any]] = {}
         self._host: str = host
         self._port: int = port
-        self._username: Optional[str] = username
-        self._password: Optional[str] = password
         self._auth_header: Optional[str] = None
+        self._rtsp_credentials: str = ""
         self._timeout: aiohttp.ClientTimeout = aiohttp.ClientTimeout(total=timeout)
         self._ssl: bool = ssl
 
         if username and password:
             self._auth_header = aiohttp.encode_basic_auth(username, password)
+            self._rtsp_credentials = f"{username}:{password}@"
 
     @property
     def base_url(self) -> str:
@@ -75,12 +75,8 @@ class PyDroidIPCam:
         Use the developer-recommended h264 & opus if no arguments are supplied.
         """
         rtsp_protocol = "rtsps" if self._ssl else "rtsp"
-        if self._username and self._password:
-            credentials = f"{self._username}:{self._password}@"
-        else:
-            credentials = ""
         return (
-            f"{rtsp_protocol}://{credentials}{self._host}:{self._port}/"
+            f"{rtsp_protocol}://{self._rtsp_credentials}{self._host}:{self._port}/"
             f"{video_codec}_{audio_codec}.sdp"
         )
 

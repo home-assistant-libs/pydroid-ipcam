@@ -17,7 +17,7 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-dependencies = ["aiohttp>=3.6.2"]
+dependencies = ["aiohttp>=3.14.0"]
 
 [project.urls]
 "Source code" = "https://github.com/home-assistant-libs/pydroid-ipcam"

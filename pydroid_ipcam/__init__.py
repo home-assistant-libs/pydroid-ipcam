@@ -30,12 +30,14 @@ class PyDroidIPCam:
         self.sensor_data: Dict[str, Dict[str, Any]] = {}
         self._host: str = host
         self._port: int = port
-        self._auth: Optional[aiohttp.BasicAuth] = None
+        self._auth_header: Optional[str] = None
+        self._rtsp_credentials: str = ""
         self._timeout: aiohttp.ClientTimeout = aiohttp.ClientTimeout(total=timeout)
         self._ssl: bool = ssl
 
         if username and password:
-            self._auth = aiohttp.BasicAuth(username, password=password)
+            self._auth_header = aiohttp.encode_basic_auth(username, password)
+            self._rtsp_credentials = f"{username}:{password}@"
 
     @property
     def base_url(self) -> str:
@@ -73,12 +75,8 @@ class PyDroidIPCam:
         Use the developer-recommended h264 & opus if no arguments are supplied.
         """
         rtsp_protocol = "rtsps" if self._ssl else "rtsp"
-        if auth := self._auth:
-            credentials = f"{auth.login}:{auth.password}@"
-        else:
-            credentials = ""
         return (
-            f"{rtsp_protocol}://{credentials}{self._host}:{self._port}/"
+            f"{rtsp_protocol}://{self._rtsp_credentials}{self._host}:{self._port}/"
             f"{video_codec}_{audio_codec}.sdp"
         )
 
@@ -96,9 +94,11 @@ class PyDroidIPCam:
         """Make the actual request and return the parsed response."""
         url: str = f"{self.base_url}{path}"
 
+        headers = {"Authorization": self._auth_header} if self._auth_header else None
+
         try:
             response = await self.websession.get(
-                url, auth=self._auth, timeout=self._timeout, raise_for_status=True
+                url, headers=headers, timeout=self._timeout, raise_for_status=True
             )
 
         except aiohttp.ClientResponseError as error:
